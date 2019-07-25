@@ -1,0 +1,348 @@
+#include <Servo.h>
+#include <Bounce2.h>
+
+Servo myservo;  // servo claw
+
+const int motor1LRPin = 2;    // H-bridge leg 1
+const int motor2LRPin = 4;    // H-bridge leg 2
+const int enableLRPin = 3;    // H-bridge enable pin
+int potPinLR = A0;
+int motorSpeedLR = 0;
+
+
+const int motor1UPPin = 7;    // H-bridge leg 1
+const int motor2UPPin = 8;    // H-bridge leg 2
+const int enableUPPin = 11;    // H-bridge enable pin
+int potPinUP = A1;
+int motorSpeedUP = 100;
+
+//const int  = 17;    // start switch input
+//const int sensor = 6;    // start switch input
+byte solenoidPin = 5;
+byte lights = 10;
+byte audio = 12;
+byte audio2 = 16;
+
+int upTime = 2200;
+int upTime1 = 1600;
+int rightTime = 2500;
+int leftTime = 2500;
+int downTime = 2200;
+int downTime1 = 150;
+int stopallTime = 750;
+int stopall2Time = 1000;
+int servocloseDelay = 500;
+int servoopenDelay = 500;
+int servocloseTime = 1600; // Really servo close in milliseconds
+int servoopenTime = 780;  // Really servo open in milliseconds
+int bellonTime = 25;
+int belloffTime = 100;
+int audioTime = 130;
+
+#define switchStart 17
+#define sensor 6
+
+Bounce debouncer1 = Bounce();
+Bounce debouncer2 = Bounce();
+
+
+void setup() {
+
+  myservo.attach(9);  // attaches the servo claw on pin 9 to the servo object
+
+  pinMode(solenoidPin, OUTPUT);
+  pinMode(lights, OUTPUT);
+  pinMode(audio, OUTPUT);
+  pinMode(audio2, OUTPUT);
+
+  // set all the other pins you're using as outputs:
+  pinMode(motor1LRPin, OUTPUT);
+  pinMode(motor2LRPin, OUTPUT);
+  pinMode(enableLRPin, OUTPUT);
+
+  // set all the other pins you're using as outputs:
+  pinMode(motor1UPPin, OUTPUT);
+  pinMode(motor2UPPin, OUTPUT);
+  pinMode(enableUPPin, OUTPUT);
+
+  pinMode(switchStart, INPUT_PULLUP);
+
+  debouncer1.attach(switchStart);
+  debouncer1.interval(25);
+
+
+  pinMode(sensor, INPUT_PULLUP);
+
+  debouncer2.attach(sensor);
+  debouncer2.interval(25);
+
+
+  // set enablePin high so that motor can turn on:
+  digitalWrite(enableLRPin, HIGH);
+  digitalWrite(enableUPPin, HIGH);
+
+  digitalWrite(audio, HIGH);
+  digitalWrite(audio2, HIGH);
+
+  Serial.begin(9600);
+
+  servoClose();
+
+}
+
+void loop() {
+
+  debouncer1.update();
+  debouncer2.update();
+
+  // Get the updated value :
+  int value1 = debouncer1.read();
+  int value2 = debouncer2.read();
+
+
+  if ( debouncer1.fell() && value2 == LOW ) {
+
+    audio2On();
+    audio2Off();
+
+  }
+
+  //if ( value1 == LOW && value2 == HIGH ) {
+  if ( debouncer1.fell() && value2 == HIGH ) {
+
+
+    lightsOn();
+    bell();
+    bellOff();
+    bell();
+    bellOff();
+    bell();
+    bellOff();
+    servoOpen();
+    Down();
+    servoClose();
+    STOPall();
+    UP();
+    right();
+    Down1();
+    bell();
+    bellOff();
+    bell();
+    bellOff();
+    bell();
+    bellOff();
+    servoOpen();
+    STOPall();
+    servoClose();
+    audioOn();
+    audioOff();
+    UP();
+    left();
+    Down1();
+    bell();
+    bellOff();
+    bell();
+    bellOff();
+    bell();
+    bellOff();
+    lightsOff();
+
+    STOPall();
+
+  }
+}
+
+void servoClose() {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+
+  while (millis() < snapshotOfTime + servocloseDelay) {
+
+    myservo.writeMicroseconds(servocloseTime);
+    //delay(10);
+  }
+}
+
+void servoOpen() {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+
+  while (millis() < snapshotOfTime + servoopenDelay) {
+
+    myservo.writeMicroseconds(servoopenTime);
+    // delay(10);
+  }
+}
+
+void UP() {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+
+  while (millis() < snapshotOfTime + upTime) {
+
+    digitalWrite(motor1UPPin, HIGH);   // set leg 1 of the H-bridge low
+    digitalWrite(motor2UPPin, LOW);  // set leg 2 of the H-bridge high
+    motorSpeedUP = analogRead(potPinUP) / 4;
+    analogWrite(enableUPPin, motorSpeedUP);
+    delay(10);
+  }
+}
+
+void UP1() {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+
+  while (millis() < snapshotOfTime + upTime1) {
+
+    digitalWrite(motor1UPPin, HIGH);   // set leg 1 of the H-bridge low
+    digitalWrite(motor2UPPin, LOW);  // set leg 2 of the H-bridge high
+    motorSpeedUP = analogRead(potPinUP) / 4;
+    analogWrite(enableUPPin, motorSpeedUP);
+    delay(10);
+  }
+}
+
+void STOPall() {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+
+  while (millis() < snapshotOfTime + stopallTime) {
+
+    digitalWrite(motor1UPPin, LOW);   // set leg 1 of the H-bridge low
+    digitalWrite(motor2UPPin, LOW);  // set leg 2 of the H-bridge high
+    digitalWrite(motor1LRPin, LOW);   // set leg 1 of the H-bridge low
+    digitalWrite(motor2LRPin, LOW);  // set leg 2 of the H-bridge high
+
+
+  }
+}
+
+void right() {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+
+  while (millis() < snapshotOfTime + rightTime) {
+
+    digitalWrite(motor1LRPin, HIGH);   // set leg 1 of the H-bridge low
+    digitalWrite(motor2LRPin, LOW);  // set leg 2 of the H-bridge high
+    motorSpeedLR = analogRead(potPinLR) / 4;
+    analogWrite(enableLRPin, motorSpeedLR);
+    delay(10);
+
+  }
+}
+
+void left() {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+
+  while (millis() < snapshotOfTime + leftTime) {
+
+    digitalWrite(motor1LRPin, LOW);   // set leg 1 of the H-bridge low
+    digitalWrite(motor2LRPin, HIGH);  // set leg 2 of the H-bridge high
+    motorSpeedLR = analogRead(potPinLR) / 4;
+    analogWrite(enableLRPin, motorSpeedLR);
+    delay(10);
+  }
+} void Down() {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+
+  while (millis() < snapshotOfTime + downTime) {
+
+    digitalWrite(motor1UPPin, LOW);   // set leg 1 of the H-bridge low
+    digitalWrite(motor2UPPin, HIGH);  // set leg 2 of the H-bridge high
+    motorSpeedUP = analogRead(potPinUP) / 4;
+    analogWrite(enableUPPin, motorSpeedUP);
+    delay(10);
+  }
+}
+
+void Down1() {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+
+  while (millis() < snapshotOfTime + downTime1) {
+
+    digitalWrite(motor1UPPin, LOW);   // set leg 1 of the H-bridge low
+    digitalWrite(motor2UPPin, HIGH);  // set leg 2 of the H-bridge high
+    motorSpeedUP = analogRead(potPinUP) / 4;
+    analogWrite(enableUPPin, motorSpeedUP);
+    delay(10);
+  }
+}
+
+void bell () {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+  while (millis() < snapshotOfTime + bellonTime) {
+    digitalWrite(solenoidPin, HIGH);
+
+  }
+}
+
+void bellOff () {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+  while (millis() < snapshotOfTime + belloffTime) {
+    digitalWrite(solenoidPin, LOW);
+
+  }
+}
+
+void audioOn () {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+  while (millis() < snapshotOfTime + audioTime) {
+    digitalWrite(audio, LOW);
+
+  }
+}
+
+void audioOff () {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+  while (millis() < snapshotOfTime + audioTime) {
+    digitalWrite(audio, HIGH);
+  }
+}
+
+void audio2On () {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+  while (millis() < snapshotOfTime + audioTime) {
+    digitalWrite(audio2, LOW);
+
+  }
+}
+
+void audio2Off () {
+
+  unsigned long snapshotOfTime = 0;
+  snapshotOfTime = millis();
+  while (millis() < snapshotOfTime + audioTime) {
+    digitalWrite(audio2, HIGH);
+
+  }
+}
+void lightsOn () {
+  digitalWrite(lights, HIGH);
+}
+
+void lightsOff () {
+  digitalWrite(lights, LOW);
+}
